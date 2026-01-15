@@ -1,30 +1,60 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import {Link, useNavigate} from "react-router-dom"
 import AuthLayout from '../../components/layout/AuthLayout'
 import Input from '../../components/Inputs/Input';
 import { validateEmail } from '../../utils/helper';
+import axiosInstance from '../../utils/axiosInstance';
+import { API_PATH } from '../../utils/apiPath';
+import { UserContext } from '../../context/userContenxt';
 
 const Login = () => {
   const [email , setEmail] = useState("");
   const [password ,  setPassword] = useState("");
   const [error  , setError]  = useState(null);
-
+  const {updateUser} = useContext(UserContext)
   const navigate = useNavigate();
 
   const handleLogin = async (e) =>{
     e.preventDefault();
 
     if(!validateEmail(email)){
-      setError("Please Enter A Valid Email Address")
+      setError("Please Enter A Valid Email Address");
+      return;
     }
 
     if(!password){
-      setError("Please Enter the password")
+      setError("Please Enter the password");
+      return;
     }
 
-    setError("")
-  }
+    setError(null);
 
+    try{
+      const response = await axiosInstance.post(API_PATH.AUTH.LOGIN, {
+        email ,
+        password,
+      });
+
+      const { token, role } = response.data;
+      if (token) {
+        localStorage.setItem("token" , token);
+        updateUser(response.data);
+
+        if (role === 'admin') {
+          navigate('/admin/dashboard');
+        } else {
+          navigate('/user/dashboard');
+        }
+      }
+    } catch (error) {
+      if(error.response && error.response.data.message) {
+        setError(error.response.data.message);
+      } else {
+        setError("Something Went Wrong , Please Try again Later");
+      }
+    }
+
+  }
   return (
     <AuthLayout>
       <div className="lg:w[70%] h-3/4 md:h-full flex-col justify-center">
@@ -52,7 +82,7 @@ const Login = () => {
 
         {error && <p className='text-red-500 text-xs pb-2.5'>{error}</p>}
 
-        <button type='sumbit' className='btn-primary'>
+        <button type='submit' className='btn-primary'>
           Login
         </button>
         <p className="text-[13px] text-slate-800 mt-3">
