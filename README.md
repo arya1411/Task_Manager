@@ -100,12 +100,6 @@ This project is open source and available under the MIT License.
 "@ | Out-File -Encoding UTF8 README.md
 
 
-DEMO
-<img width="1900" height="916" alt="image" src="https://github.com/user-attachments/assets/cfaa9c1e-bf09-4025-a91b-184230d51bc0" />
-<img width="1914" height="926" alt="image" src="https://github.com/user-attachments/assets/da7b5817-5d72-4b7e-a3f2-539c85b56bab" />
-<img width="1888" height="919" alt="image" src="https://github.com/user-attachments/assets/3638a64f-7263-47c6-ae68-0fdb1e1e093f" />
-<img width="1898" height="909" alt="image" src="https://github.com/user-attachments/assets/78703cfe-760b-4941-8530-bbf30a0fd0f0" />
-<img width="1906" height="923" alt="image" src="https://github.com/user-attachments/assets/75fa7b18-297d-4969-ae1b-61ce3d42bdd3" />
 
 
 Made By Arya!
