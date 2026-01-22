@@ -28,12 +28,11 @@ const App = () => {
             </Route>
           
           { /* User Routes */}
-            <Route element = {<PrivateRoute allowedRoles = {["admin"]} />}>
-            <Route path = '/User/UserDashboard' element = {<UserDashboard />} />
-            <Route path = '/User/tasks' element = {<MyTask />} />
-            <Route path = '/User/tasks' element = {<MyTask />} /> 
-            <Route path = '/User/task-details/:id' element = {<ViewTaskDetails/>} />\
-            </Route>
+          <Route element = {<PrivateRoute allowedRoles = {["user"]} />}>
+            <Route path = '/user/dashboard' element = {<UserDashboard />} />
+            <Route path = '/user/tasks' element = {<MyTask />} />
+            <Route path = '/user/task-details/:id' element = {<ViewTaskDetails/>} />
+          </Route>
           
             <Route path='/' element = {<Root/>} />
         </Routes>
@@ -51,10 +50,8 @@ const Root = () => {
   
   if (!user) {
      return <Navigate to =  '/login' />
-    
   }
-
-  return user.role === 'admin' ? <Navigate to = "/admin/dashboard" /> : <Navigate to = '/users/dashboard' />;
+  return user.role === 'admin' ? <Navigate to = "/admin/dashboard" /> : <Navigate to = '/user/dashboard' />;
 
 
 }

@@ -1,5 +1,55 @@
 const Task = require("../models/Task.js");
 
+const normalizeTaskStatus = (value) => {
+    if (value === undefined || value === null) return undefined;
+
+    const raw = String(value).trim();
+    if (!raw) return undefined;
+
+    const normalized = raw.toLowerCase().replace(/\s+/g, "");
+
+    if (normalized === "pending") return "Pending";
+    if (normalized === "inprogress" || normalized === "In_Progress") return "In_Progress";
+    if (normalized === "completed" || normalized === "complete") return "Completed";
+
+    return null;
+};
+
+const normalizeBoolean = (value) => {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "number") return value !== 0;
+    if (typeof value === "string") {
+        const normalized = value.trim().toLowerCase();
+        if (["true", "1", "yes", "y"].includes(normalized)) return true;
+        if (["false", "0", "no", "n"].includes(normalized)) return false;
+    }
+    return false;
+};
+
+const normalizeTodoChecklist = (value) => {
+    if (!Array.isArray(value)) return value;
+
+    return value
+        .map((item) => {
+            if (typeof item === "string") {
+                return { text: item, completed: false };
+            }
+            if (!item || typeof item !== "object") return null;
+
+            const text = item.text ?? item.title ?? item.label;
+            if (!text) return null;
+
+            const completed =
+                item.completed ?? item.Completed ?? item.done ?? item.isCompleted ?? false;
+
+            return {
+                text,
+                completed: normalizeBoolean(completed),
+            };
+        })
+        .filter(Boolean);
+};
+
 const getTasks = async(req , res) => {
 
     try {
@@ -7,7 +57,14 @@ const getTasks = async(req , res) => {
         const filter = {};
 
         if (status) {
-            filter.status = status;
+            const normalizedStatus = normalizeTaskStatus(status);
+            if (!normalizedStatus) {
+                return res.status(400).json({
+                    message: "Invalid status value",
+                    allowed: ["Pending", "In_Progress", "Completed"],
+                });
+            }
+            filter.status = normalizedStatus;
         }
 
         let tasks;
@@ -41,28 +98,28 @@ const getTasks = async(req , res) => {
         const pendingTasks = await Task.countDocuments({
             ...filter,
             ...roleFilter,
-            status: "pending",
+            status: "Pending",
         });
 
         const inProgressTasks = await Task.countDocuments({
             ...filter,
             ...roleFilter,
-            status: "in-progress",
+            status: "In_Progress",
         });
 
         const completedTasks = await Task.countDocuments({
             ...filter,
             ...roleFilter,
-            status: "completed",
+            status: "Completed",
         });
         
         return res.status(200).json({
             tasks,
             statusSummary: {
                 all: allTasks,
-                pending: pendingTasks,
-                inProgress: inProgressTasks,
-                completed: completedTasks,
+                Pending: pendingTasks,
+                InProgress: inProgressTasks,
+                Completed: completedTasks,
             },
         });
     } catch (error) {
@@ -74,13 +131,13 @@ const getDashboardData = async(req , res) => {
 
     try {
         const totalTasks  = await Task.countDocuments();
-        const pendingTasks = await Task.countDocuments({ status: "pending" });
-        const completedTasks = await Task.countDocuments({ status: "completed" });
+        const pendingTasks = await Task.countDocuments({ status: "Pending" });
+        const completedTasks = await Task.countDocuments({ status: "Completed" });
         const overdueTask  = await Task.countDocuments({
-            status: { $ne: "completed" },
+            status: { $ne: "Completed" },
             dueDate: { $lt: new Date() },
         });
-        const taskStatuses = ["pending", "in-progress", "completed"];
+        const taskStatuses = ["Pending", "In_Progress", "Completed"];
         const taskDistributionRaw = await Task.aggregate([
             {
                 $group: {
@@ -143,15 +200,15 @@ const getUserDashboardData = async(req , res) => {
         const userId = req.user._id;
 
         const totalTasks = await Task.countDocuments({ assignedTo: userId });
-        const pendingTasks = await Task.countDocuments({ assignedTo: userId, status: "pending" });
-        const completedTasks = await Task.countDocuments({ assignedTo: userId, status: "completed" });
+        const pendingTasks = await Task.countDocuments({ assignedTo: userId, status: "Pending" });
+        const completedTasks = await Task.countDocuments({ assignedTo: userId, status: "Completed" });
         const overdueTask = await Task.countDocuments({
             assignedTo:userId,
-            status : {$ne: "completed"},
+            status : {$ne: "Completed"},
             dueDate : {$lt : new Date()},
         });
 
-        const taskStatuses = ["pending" , "in-progress" , "completed" ];
+        const taskStatuses = ["Pending" , "In_Progress" , "Completed" ];
         const taskDistributionRaw = await Task.aggregate([
             {$match : {assignedTo : userId}},
             {$group : {_id:"$status" , count: {$sum : 1}}},
@@ -223,6 +280,7 @@ const createTask = async(req , res) => {
             title, 
             description,
             priority,
+            status,
             dueDate,
             assignedTo,
             attachments,
@@ -236,14 +294,23 @@ const createTask = async(req , res) => {
 
         }
 
+        const normalizedStatus = normalizeTaskStatus(status);
+        if (status !== undefined && !normalizedStatus) {
+            return res.status(400).json({
+                message: "Invalid status value",
+                allowed: ["Pending", "In_Progress", "Completed"],
+            });
+        }
+
         const task = await Task.create({
             title,
             description,
             priority,
+            ...(normalizedStatus ? { status: normalizedStatus } : {}),
             dueDate,
             assignedTo,
             createdBy : req.user._id,
-            todoChecklist,
+            todoChecklist: normalizeTodoChecklist(todoChecklist),
             attachments,
 
         });
@@ -263,8 +330,21 @@ const updateTask = async(req , res) => {
         task.description = req.body.description || task.description ;
         task.priority = req.body.priority || task.priority; 
         task.dueDate = req.body.dueDate || task.dueDate;
-        task.todoChecklist = req.body.todoChecklist || task.todoChecklist;
+        if (req.body.todoChecklist !== undefined) {
+            task.todoChecklist = normalizeTodoChecklist(req.body.todoChecklist);
+        }
         task.attachments = req.body.attachments || task.attachments;
+
+        if (req.body.status !== undefined) {
+            const normalizedStatus = normalizeTaskStatus(req.body.status);
+            if (!normalizedStatus) {
+                return res.status(400).json({
+                    message: "Invalid status value",
+                    allowed: ["Pending", "In_Progress", "Completed"],
+                });
+            }
+            task.status = normalizedStatus;
+        }
 
         if(req.body.assignedTo){
             if(!Array.isArray(req.body.assignedTo)){
@@ -311,14 +391,25 @@ const updateTaskStatus = async(req , res) => {
             return res.status(403).json({message : "Not authorized"});
         }
 
-        task.status = req.body.status || task.status;
-        if(task.status === "completed"){
-            task.todoChecklist.forEach((item) =>(item.completed = true));
+        if (req.body.status !== undefined) {
+            const normalizedStatus = normalizeTaskStatus(req.body.status);
+            if (!normalizedStatus) {
+                return res.status(400).json({
+                    message: "Invalid status value",
+                    allowed: ["Pending", "In_Progress", "Completed"],
+                });
+            }
+            task.status = normalizedStatus;
+        }
+
+        if (task.status === "Completed") {
+            const checklist = Array.isArray(task.todoChecklist) ? task.todoChecklist : [];
+            checklist.forEach((item) => (item.completed = true));
             task.progress = 100;
         }
 
         await task.save();
-        res.json({message : "Task Status Completed" , task });
+        res.json({ message: "Task status updated", task });
     } catch (error){
         return res.status(500).json({message : "Server Error " , error : error.message});
     }
@@ -341,7 +432,7 @@ const updateTaskChecklist = async(req , res) => {
                 .json({message : "Not Authorized to update Checklist"});
         }
 
-        task.todoChecklist  = todoChecklist;
+        task.todoChecklist  = normalizeTodoChecklist(todoChecklist);
         const completedCount = task.todoChecklist.filter(
             (item) => item.completed
         ) .length;
@@ -349,11 +440,11 @@ const updateTaskChecklist = async(req , res) => {
         task.progress = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
 
         if(task.progress === 100){
-            task.status = "completed";
+            task.status = "Completed";
         } else if(task.progress > 0){
-            task.status = "in-progress";
+            task.status = "In_Progress";
         } else {
-            task.status = "pending";
+            task.status = "Pending";
         }
         await task.save();
         const updatedTask  = await Task.findById(req.params.id).populate(
