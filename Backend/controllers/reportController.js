@@ -99,7 +99,7 @@ const exportUserReport = async (req, res) => {
 
                     if (task.status === "Pending") {
                         stats.pendingTask += 1;
-                    } else if (task.status === "In Progress") {
+                    } else if (task.status === "In_Progress" || task.status === "In Progress") {
                         stats.inProgressTask += 1;
                     } else if (task.status === "Completed") {
                         stats.completedTask += 1;

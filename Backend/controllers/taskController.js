@@ -6,10 +6,12 @@ const normalizeTaskStatus = (value) => {
     const raw = String(value).trim();
     if (!raw) return undefined;
 
-    const normalized = raw.toLowerCase().replace(/\s+/g, "");
+    // Accept common variants from clients/DB: "In Progress", "In_Progress", "in-progress", etc.
+    // We normalize by removing spaces/underscores/hyphens.
+    const normalized = raw.toLowerCase().replace(/[\s_-]+/g, "");
 
     if (normalized === "pending") return "Pending";
-    if (normalized === "inprogress" || normalized === "In_Progress") return "In_Progress";
+    if (normalized === "inprogress") return "In_Progress";
     if (normalized === "completed" || normalized === "complete") return "Completed";
 
     return null;
