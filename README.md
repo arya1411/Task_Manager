@@ -39,8 +39,8 @@ mern-task-manager/
 Create a `.env` file inside the backend folder:
 
 PORT=5000  
-MONGO_URI=your_mongodb_connection_string  
-JWT_SECRET=your_jwt_secret  
+MONGO_URI=your_mongodb_connection_string  ;
+JWT_SECRET=your_jwt_secret ;
 
 Make sure `.env` is added to `.gitignore`.
 
