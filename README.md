@@ -10,7 +10,6 @@ This project is inspired by a YouTube tutorial and focuses on building a complet
 - Protected API routes
 - Clean and responsive UI
 - RESTful backend architecture
-- Environment variable security
 
 ## Tech Stack
 Frontend:
