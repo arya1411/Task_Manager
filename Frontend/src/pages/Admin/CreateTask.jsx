@@ -5,6 +5,10 @@ import { LuTrash2 } from 'react-icons/lu';
 import { PRIORITY_DATA } from '../../utils/data';
 import SelectDropDown from '../../components/Inputs/SelectDropDown';
 import SelectUser from '../../components/Inputs/SelectUser';
+import TodoListInput from '../../components/Inputs/TodoListInput';
+import AddAttachmentsInput from '../../components/Inputs/AddAttachmentsInput';
+import axiosInstance from '../../utils/axiosInstance';
+import { API_PATH } from '../../utils/apiPath';
 
 const CreateTask = () => {
   const location = useLocation();
@@ -16,7 +20,7 @@ const CreateTask = () => {
     priority : "Low",
     dueDate : null,
     assignedTo : [],
-    todoCheckList : [] ,
+    todoChecklist : [] ,
     attachments : [],
   });
 
@@ -32,6 +36,25 @@ const CreateTask = () => {
     setTaskData((prevData) => ({...prevData , [key] :value}));
   }
 
+  const createTask = async () => {
+    setLoading(true);
+    try{
+      const todoList = taskData.todoChecklist?.map((item) => ({
+        text : item ,
+        completed : false,
+      }));
+
+      const response = await axiosInstance.post(API_PATH.TASKS.CREATE_TASK , {
+        ...taskData,
+        dueDate : new Date(taskData.dueDate).toISOString(),
+        todoChecklist : todoList,
+      });
+      clearData();
+    } catch (error) {
+      console.error("Error in Creating Task" , error);
+      setLoading(false);
+    }
+  }
   const clearData = () => {
     setTaskData({
       title :"",
@@ -39,10 +62,43 @@ const CreateTask = () => {
       priority  :"Low",
       dueDate : null,
       assignedTo : [],
-      todoCheckList :[],
+      todoChecklist :[],
       attachments :[],
     });
   };
+
+  const handleSumbit = async () => {
+    setError(null);
+
+    if(!taskData.title.trim()){
+      setError("Tittle Is Required");
+      return ;
+    }
+
+    if(!taskData.description.trim()){
+      setError("Description is Required");
+    }
+    
+    if(!taskData.dueDate) {
+      setError("Due Date is Required");
+    }
+
+    if(taskData.assignedTo.length === 0){
+      setError("Task is not Assigned to nay memeber");
+      return ;
+    }
+
+    if(taskData.todoChecklist?.length === 0){
+      setError("You need TO add Atleast one of Todo Task ");
+    }
+
+    if(taskId){
+      updateTask();
+      return ;
+    }
+    
+    createTask();
+  }
 
   return (
     <DashboardLayout activeMenu="Create Task">
@@ -119,6 +175,42 @@ const CreateTask = () => {
                 />
               </div>
 
+            </div>
+
+            <div className="mt-3">
+              <label className="text-xs font-medium text-slate-600">TODO CHECKLIST</label>
+              <TodoListInput
+                  todoList = {taskData?.todoChecklist}
+                  setTodoList = {(value) => 
+                  handleValueChange("todoChecklist" , value)
+                  }
+            />
+            </div>
+          
+            <div className="mt-3">
+              <label  className="text-xs font-medium text-slate-600">
+                Add Attachments
+              </label>
+
+              <AddAttachmentsInput
+                attachments = {taskData?.attachments}
+                setAttachments = {(value) => 
+                    handleValueChange("attachments" , value)
+                }
+                />
+            </div>
+
+            {error && (
+              <p className="text-xs font-medium text-red-500 mt-5">{error}</p>
+            )}
+            <div className="flex justify-end mt-7">
+              <button 
+              className='add-btn' 
+              onClick={handleSumbit}
+              disabled = {loading}
+              >
+                {taskId ? "UPDATE TASK" : "CREATE TASK"}
+              </button>
             </div>
           </div>
         </div>

@@ -17,12 +17,12 @@ const App = () => {
       <Router>
         <Routes>
           <Route path = '/login' element ={<Login />} />
-          <Route path = '/signUp' element ={<SignUp />} />
+            <Route path = '/signUp' element ={<SignUp />} />
 
           { /* Admin Routes */}
           <Route element = {<PrivateRoute allowedRoles = {["admin"]} />}>
             <Route path = '/admin/dashboard' element = {<Dashboard />} />
-            <Route path = '/admin/task' element = {<ManageTask />} />
+            <Route path = '/admin/tasks' element = {<ManageTask />} />
             <Route path = '/admin/create-task' element = {<CreateTask />} />
             <Route path = '/admin/users' element = {<ManageUser />} />
             </Route>
@@ -37,6 +37,10 @@ const App = () => {
             <Route path='/' element = {<Root/>} />
         </Routes>
       </Router>
+
+
+
+      
     </UserProvider>
   )
 }

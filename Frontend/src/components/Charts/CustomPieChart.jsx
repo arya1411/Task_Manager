@@ -7,7 +7,7 @@ import {
     ResponsiveContainer,
     Legend,
 } from "recharts";
-import CustomTooltip from './CustomToolTip';
+import CustomTooltip from './CustomTooltip';
 
 const DEFAULT_COLORS = ["#8D51FF", "#00B8DB", "#7BCE00", "#FF6B6B", "#FFA94D"]; 
 
@@ -48,7 +48,7 @@ const CustomPieChart = ({ data = [], colors, color, label }) => {
         )}
 
         <Tooltip />
-        <Legend />
+        <Legend/>
       </PieChart>
     </ResponsiveContainer>
     

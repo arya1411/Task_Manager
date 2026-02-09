@@ -287,7 +287,11 @@ const createTask = async(req , res) => {
             assignedTo,
             attachments,
             todoChecklist,
+            todoCheckList,
         } = req.body;
+        
+        // Accept both todoChecklist and todoCheckList for backward compatibility
+        const checklist = todoChecklist || todoCheckList;
         
         if(!Array.isArray(assignedTo)){
             return res
@@ -312,7 +316,7 @@ const createTask = async(req , res) => {
             dueDate,
             assignedTo,
             createdBy : req.user._id,
-            todoChecklist: normalizeTodoChecklist(todoChecklist),
+            todoChecklist: normalizeTodoChecklist(checklist),
             attachments,
 
         });
@@ -332,8 +336,11 @@ const updateTask = async(req , res) => {
         task.description = req.body.description || task.description ;
         task.priority = req.body.priority || task.priority; 
         task.dueDate = req.body.dueDate || task.dueDate;
-        if (req.body.todoChecklist !== undefined) {
-            task.todoChecklist = normalizeTodoChecklist(req.body.todoChecklist);
+        
+        // Accept both todoChecklist and todoCheckList for backward compatibility
+        const checklist = req.body.todoChecklist ?? req.body.todoCheckList;
+        if (checklist !== undefined) {
+            task.todoChecklist = normalizeTodoChecklist(checklist);
         }
         task.attachments = req.body.attachments || task.attachments;
 
@@ -420,7 +427,8 @@ const updateTaskStatus = async(req , res) => {
 const updateTaskChecklist = async(req , res) => {
 
     try {
-        const {todoChecklist} = req.body;
+        // Accept both todoChecklist and todoCheckList for backward compatibility
+        const todoChecklist = req.body.todoChecklist ?? req.body.todoCheckList;
         const task  = await Task.findById(req.params.id);
 
         if(!task) return res.status(404).json({message : "Task Not Found"});
