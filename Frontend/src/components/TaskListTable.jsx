@@ -34,17 +34,17 @@ const TaskListTable = ({ tableData = [] }) => {
         <table className="min-w-full">
             <thead>
                 <tr className="text-left">
-                    <th className='py-3 px-4 text-gray-800 font-medium text-[13px]'>Name</th>
-                    <th className='py-3 px-4 text-gray-800 font-medium text-[13px]'>Status</th>
-                    <th className='py-3 px-4 text-gray-800 font-medium text-[13px]'>Priority</th>
-                    <th className='py-3 px-4 text-gray-800 font-medium text-[13px] hidden md:table-cell'>Created On</th>
+                    <th className='py-3 px-4 text-gray-800 dark:text-dark-text font-medium text-[13px]'>Name</th>
+                    <th className='py-3 px-4 text-gray-800 dark:text-dark-text font-medium text-[13px]'>Status</th>
+                    <th className='py-3 px-4 text-gray-800 dark:text-dark-text font-medium text-[13px]'>Priority</th>
+                    <th className='py-3 px-4 text-gray-800 dark:text-dark-text font-medium text-[13px] hidden md:table-cell'>Created On</th>
                 </tr>
             </thead>
             <tbody>
                 {tableData?.length ? (
                     tableData.map((task) => (
-                        <tr key={task?._id ?? task?.id} className='border-t border-gray-200'>
-                            <td className="py-4 px-4 text-gray-700 text-[13px] line-clamp-1 overflow-hidden">
+                        <tr key={task?._id ?? task?.id} className='border-t border-gray-200 dark:border-dark-border'>
+                            <td className="py-4 px-4 text-gray-700 dark:text-dark-text-secondary text-[13px] line-clamp-1 overflow-hidden">
                                 {task?.title ?? 'Untitled'}
                             </td>
                             <td className="py-4 px-4">
@@ -57,14 +57,14 @@ const TaskListTable = ({ tableData = [] }) => {
                                     {task?.priority ?? 'N/A'}
                                 </span>
                             </td>
-                            <td className="py-4 px-4 text-gray-700 text-[13px] whitespace-nowrap hidden md:table-cell">
+                            <td className="py-4 px-4 text-gray-700 dark:text-dark-text-secondary text-[13px] whitespace-nowrap hidden md:table-cell">
                                 {task?.createdAt ? moment(task.createdAt).format('Do MMM YYYY') : 'N/A'}
                             </td>
                         </tr>
                     ))
                 ) : (
-                    <tr className='border-t border-gray-200'>
-                        <td colSpan={4} className='py-6 px-4 text-gray-500 text-sm'>
+                    <tr className='border-t border-gray-200 dark:border-dark-border'>
+                        <td colSpan={4} className='py-6 px-4 text-gray-500 dark:text-dark-text-secondary text-sm'>
                             No tasks found.
                         </td>
                     </tr>

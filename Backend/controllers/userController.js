@@ -11,11 +11,11 @@ const getUsers = async (req , res ) =>{
             users.map(async (user) =>{
                 const pendingTask = await Task.countDocuments({
                     assignedTo : user._id,
-                    status : "pending",
+                    status : "Pending",
                 });
                 const InprogressTask = await Task.countDocuments({
                     assignedTo : user._id,
-                    status : "In Progress",
+                    status : "In_Progress",
                 });
                 const completedTask = await Task.countDocuments({
                     assignedTo : user._id,

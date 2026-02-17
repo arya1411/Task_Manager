@@ -11,13 +11,18 @@ import MyTask from './pages/User/MyTask';
 import ViewTaskDetails from './pages/User/ViewTaskDetails';
 import PrivateRoute from './routes/PrivateRoute';
 import UserProvider, { UserContext } from './context/userContenxt';
+import ThemeProvider from './context/ThemeContext';
+import HomePage from './pages/Home/HomePage';
+
 const App = () => {
   return (
-    <UserProvider>
-      <Router>
-        <Routes>
+    <ThemeProvider>
+      <UserProvider>
+        <Router>
+          <Routes>
+          <Route path = '/' element ={<HomePage />} />
           <Route path = '/login' element ={<Login />} />
-            <Route path = '/signUp' element ={<SignUp />} />
+          <Route path = '/signUp' element ={<SignUp />} />
 
           { /* Admin Routes */}
           <Route element = {<PrivateRoute allowedRoles = {["admin"]} />}>
@@ -31,31 +36,14 @@ const App = () => {
           <Route element = {<PrivateRoute allowedRoles = {["user"]} />}>
             <Route path = '/user/dashboard' element = {<UserDashboard />} />
             <Route path = '/user/tasks' element = {<MyTask />} />
-            <Route path = '/user/task-details/:id' element = {<ViewTaskDetails/>} />
+              <Route path = '/user/task-details/:id' element = {<ViewTaskDetails/>} />
           </Route>
-          
-            <Route path='/' element = {<Root/>} />
-        </Routes>
-      </Router>
-
-
-
-      
-    </UserProvider>
+          </Routes>
+        </Router>
+      </UserProvider>
+    </ThemeProvider>
   )
 }
                          
 
-export default App; 
-
-const Root = () => {
-  const {user , loading } = useContext(UserContext);
-  if (loading) return <Outlet />
-  
-  if (!user) {
-     return <Navigate to =  '/login' />
-  }
-  return user.role === 'admin' ? <Navigate to = "/admin/dashboard" /> : <Navigate to = '/user/dashboard' />;
-
-
-}
+export default App;

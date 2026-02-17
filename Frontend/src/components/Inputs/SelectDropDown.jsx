@@ -18,7 +18,7 @@ const SelectDropDown = ({ option = [], value, onChange, placeholder }) => {
         <div className="relative w-full">
             <button
                 type="button"
-                className="w-full text-sm text-black outline-none bg-white border border-slate-100 px-2.5 py-3 rounded-md mt-2 flex justify-between items-center"
+                className="w-full text-sm text-black dark:text-dark-text outline-none bg-white dark:bg-dark-surface-2 border border-slate-100 dark:border-dark-border px-2.5 py-3 rounded-md mt-2 flex justify-between items-center"
                 onClick={() => setIsOpen((prev) => !prev)}
             >
                 <span className="truncate">{selectedLabel || placeholder}</span>
@@ -30,12 +30,12 @@ const SelectDropDown = ({ option = [], value, onChange, placeholder }) => {
             </button>
 
             {isOpen && (
-                <div className="absolute z-10 mt-1 w-full rounded-md border border-slate-100 bg-white shadow">
+                <div className="absolute z-10 mt-1 w-full rounded-md border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-surface shadow">
                     {option.map((opt) => (
                         <button
                             key={opt.value}
                             type="button"
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50"
+                            className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-dark-text hover:bg-slate-50 dark:hover:bg-dark-surface-2"
                             onClick={() => handleSelect(opt)}
                         >
                             {opt.label}

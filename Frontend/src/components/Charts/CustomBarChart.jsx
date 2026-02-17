@@ -9,8 +9,11 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
+import { useTheme } from '../../context/ThemeContext';
 
 const CustomBarChart = ({ data = [] }) => {
+  const { isDarkMode } = useTheme();
+  const axisColor = isDarkMode ? '#94a3b8' : '#555';
 
   const getBarColor = (entry) => {
     switch (entry?.priority) {
@@ -28,11 +31,11 @@ const CustomBarChart = ({ data = [] }) => {
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white shadow-md rounded-lg p-2 border border-gray-300">
-          <p className="text-sm font-semibold text-purple-800 mb-1">
+        <div className="bg-white dark:bg-dark-surface shadow-md rounded-lg p-2 border border-gray-300 dark:border-dark-border">
+          <p className="text-sm font-semibold text-purple-800 dark:text-purple-400 mb-1">
             {payload[0].payload.priority}
           </p>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-dark-text-secondary">
             Count: <span className="font-medium">{payload[0].payload.count}</span>
           </p>
         </div>
@@ -43,19 +46,19 @@ const CustomBarChart = ({ data = [] }) => {
 
   return (
     
-    <div className="bg-white mt-6 w-full">
+    <div className="bg-white dark:bg-dark-surface mt-6 w-full">
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={data}>
           <CartesianGrid stroke="none" />
 
           <XAxis
             dataKey="priority"
-            tick={{ fontSize: 12, fill: "#555" }}
+            tick={{ fontSize: 12, fill: axisColor }}
             stroke="none"
           />
 
           <YAxis
-            tick={{ fontSize: 12, fill: "#555" }}
+            tick={{ fontSize: 12, fill: axisColor }}
             stroke="none"
           />
 

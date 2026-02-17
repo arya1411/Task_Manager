@@ -72,7 +72,7 @@ const SelectUser = ({ setSelectedUsers, selectedUsers }) => {
           {allUsers.map((user) => (
             <div
               key={user._id}
-              className='flex items-center gap-4 p-3 border-b border-gray-200'
+              className='flex items-center gap-4 p-3 border-b border-gray-200 dark:border-dark-border'
               >
                 <img
                   src={user.profileImageUrl}
@@ -80,14 +80,14 @@ const SelectUser = ({ setSelectedUsers, selectedUsers }) => {
                   className='w-10 h-10 rounded-full'
                 />
                 <div className="flex-1">
-                  <p className="font-medium text-gray-800">{user.name}</p>
-                  <p className="text-[13px] text-gray-500">{user.email}</p>
+                  <p className="font-medium text-gray-800 dark:text-dark-text">{user.name}</p>
+                  <p className="text-[13px] text-gray-500 dark:text-dark-text-secondary">{user.email}</p>
                 </div>
                 <input 
                 type="checkbox"
                 checked = {tempSelectedUsers.includes(user._id)}
                 onChange={() => toggleUserSelection(user._id)}
-                className='w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded-sm outline-none'
+                className='w-4 h-4 text-primary bg-gray-100 dark:bg-dark-surface-2 border-gray-300 dark:border-dark-border rounded-sm outline-none'
                 />
               </div>
           ) )}

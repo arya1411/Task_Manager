@@ -58,7 +58,23 @@ const ManageTask = () => {
     }
   };
 
-  const handleDownloadReport = async() => {
+   const handleDownloadReport =  async () => {
+    try {
+      const response = await axiosInstance.get(API_PATH.REPORTS.EXPORT_TASKS, {
+        responseType : "blob",
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("Download" , "user_details.xlsx");
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url); 
+    } catch(error){
+      console.error("Error Downloading User Details", error);
+    }
   }
 
   useEffect(() => {
@@ -68,55 +84,63 @@ const ManageTask = () => {
 
   return (
     <DashboardLayout activeMenu="Manage Task">
-      <div className="my-5">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-xl ">My Task</h2>
-          <button className="flex items-center gap-2 download-btn">
-            <LuFileSpreadsheet className="text-lg" />
-            <span>Download Report</span>
-          </button>
-
+      {/* Header Section */}
+      <div className="mb-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-dark-text">Manage Tasks</h1>
+            <p className="text-sm text-gray-500 dark:text-dark-text-secondary mt-1">View and manage all your tasks</p>
           </div>
 
-          {allTask?.length > 0 && (
-            <div className="flex items-center gap-3">
-              <TaskStatusTabs
-                tabs={tabs}
-                activeTab={filterStatus}
-                setActiveTab={setFilterStatus}
-              />
-
-                <button className="hidden md:flex download-btn" onClick={handleDownloadReport}>
-                <LuFileSpreadsheet className='text-lg' />
-                Download Report
-                </button>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            <button 
+              className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border text-gray-700 dark:text-dark-text rounded-lg hover:bg-gray-50 dark:hover:bg-dark-surface-2 transition text-sm font-medium"
+              onClick={handleDownloadReport}
+            >
+              <LuFileSpreadsheet className="text-lg" />
+              <span className="hidden sm:inline">Download Report</span>
+            </button>
+          </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          {allTask?.map((item , index) => (
+      {/* Filter Tabs */}
+      <div className="mb-6">
+        <TaskStatusTabs
+          tabs={tabs}
+          activeTab={filterStatus}
+          setActiveTab={setFilterStatus}
+        />
+      </div>
+
+      {/* Task Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        {allTask?.length > 0 ? (
+          allTask.map((item) => (
             <TaskCard
-              key = {item._id}
-              title = {item.title}
-              description = {item.description}
-              priority = {item.priority}
-              status = {item.status}
-              progress = {item.progress}
-              createdAt = {item.createdAt}
-              dueDate = {item.dueDate}
-              assignedTo = {item.assignedTo?.map((item) => item.profileImageUrl)}
-              attachmentCount = {item.attachments?.length || 0}
-              completedTodoCount = {item.completedTodoCount || 0}
-              todoChecklist = {item.todoChecklist || []}
-              onClick ={() => {
-                handleClick(item)
-              }}
+              key={item._id}
+              title={item.title}
+              description={item.description}
+              priority={item.priority}
+              status={item.status}
+              progress={item.progress}
+              createdAt={item.createdAt}
+              dueDate={item.dueDate}
+              assignedTo={item.assignedTo?.map((user) => user.name)}
+              attachmentCount={item.attachments?.length || 0}
+              completedTodoCount={item.completedTodoCount || 0}
+              todoChecklist={item.todoChecklist || []}
+              onClick={() => handleClick(item)}
               onDelete={() => handleDeleteTask(item._id)}
-              />
-          ))}
-        </div>
+            />
+          ))
+        ) : (
+          <div className="col-span-full bg-white dark:bg-dark-surface rounded-xl border border-gray-100 dark:border-dark-border p-12 text-center">
+            <LuFile className="w-12 h-12 text-gray-300 dark:text-dark-text-secondary mx-auto mb-3" />
+            <h3 className="text-gray-500 dark:text-dark-text-secondary font-medium">No tasks found</h3>
+            <p className="text-gray-400 dark:text-dark-text-secondary text-sm mt-1">Create a new task to get started</p>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   )

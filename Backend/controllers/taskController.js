@@ -17,6 +17,12 @@ const normalizeTaskStatus = (value) => {
     return null;
 };
 
+// Convert DB status (In_Progress) to display format (In Progress) for frontend
+const formatStatusForDisplay = (status) => {
+    if (status === "In_Progress") return "In Progress";
+    return status;
+};
+
 const normalizeBoolean = (value) => {
     if (typeof value === "boolean") return value;
     if (typeof value === "number") return value !== 0;
@@ -86,31 +92,32 @@ const getTasks = async(req , res) => {
         tasks = tasks.map((task) => {
             const checklist = Array.isArray(task.todoChecklist) ? task.todoChecklist : [];
             const completedCount = checklist.filter((item) => item.completed).length;
+            const totalItems = checklist.length;
+            const progress = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
             return {
                 ...task._doc,
+                status: formatStatusForDisplay(task.status),
                 completedTodoCount: completedCount,
+                progress: progress,
             };
         });
 
 
         const roleFilter = req.user.role === "admin" ? {} : { assignedTo: req.user._id };
 
-        const allTasks = await Task.countDocuments({ ...filter, ...roleFilter });
+        const allTasks = await Task.countDocuments({ ...roleFilter });
 
         const pendingTasks = await Task.countDocuments({
-            ...filter,
             ...roleFilter,
             status: "Pending",
         });
 
         const inProgressTasks = await Task.countDocuments({
-            ...filter,
             ...roleFilter,
             status: "In_Progress",
         });
 
         const completedTasks = await Task.countDocuments({
-            ...filter,
             ...roleFilter,
             status: "Completed",
         });
@@ -251,7 +258,9 @@ const getUserDashboardData = async(req , res) => {
             },
             charts: {
                 taskDistribution,
+                taskPriorityLevels,
             },
+            recentTask,
         });
 
 
@@ -270,7 +279,10 @@ const getTaskbyId = async(req , res) => {
 
         if (!task) return res.status(404).json({ message: "Task not Found" });
 
-        return res.status(200).json(task);
+        return res.status(200).json({
+            ...task._doc,
+            status: formatStatusForDisplay(task.status),
+        });
     } catch (error){
         return res.status(500).json({message : "Server Error" , error : error.message});
     }
@@ -321,7 +333,10 @@ const createTask = async(req , res) => {
 
         });
 
-        res.status(201).json({message : "Task Created Succesfully" , task});
+        res.status(201).json({
+            message: "Task Created Succesfully",
+            task: { ...task._doc, status: formatStatusForDisplay(task.status) }
+        });
     } catch (error){
         res.status(500).json({message : "Server Error" , error : error.message});
     }
@@ -366,7 +381,10 @@ const updateTask = async(req , res) => {
         }
 
         await task.save();
-        return res.status(200).json({ message: "Task updated successfully", task });
+        return res.status(200).json({
+            message: "Task updated successfully",
+            task: { ...task._doc, status: formatStatusForDisplay(task.status) }
+        });
     } catch (error){
         return res.status(500).json({message : "Server Error" , error : error.message});
     }
@@ -418,7 +436,10 @@ const updateTaskStatus = async(req , res) => {
         }
 
         await task.save();
-        res.json({ message: "Task status updated", task });
+        res.json({
+            message: "Task status updated",
+            task: { ...task._doc, status: formatStatusForDisplay(task.status) }
+        });
     } catch (error){
         return res.status(500).json({message : "Server Error " , error : error.message});
     }
@@ -462,7 +483,10 @@ const updateTaskChecklist = async(req , res) => {
             "name email profileImageUrl"
         );
 
-        res.json({message : "task Checklist Updated" , task:updatedTask});
+        res.json({
+            message: "task Checklist Updated",
+            task: { ...updatedTask._doc, status: formatStatusForDisplay(updatedTask.status) }
+        });
     } catch (error) {
         return res.status(500).json({ message: "Server Error", error: error.message });
     }
