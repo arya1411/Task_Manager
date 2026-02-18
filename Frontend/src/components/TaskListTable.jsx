@@ -1,6 +1,31 @@
 import React from 'react'
 import moment from 'moment'
 
+// Get due date status info
+const getDueDateInfo = (dueDate, status) => {
+    if (!dueDate || status === "Completed") {
+        return { label: null, style: "text-gray-700 dark:text-dark-text-secondary" };
+    }
+
+    const now = new Date();
+    const due = new Date(dueDate);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const dueDay = new Date(due.getFullYear(), due.getMonth(), due.getDate());
+    const diffTime = dueDay - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+        return { label: "Overdue", style: "text-rose-600", badgeStyle: "bg-rose-100 text-rose-600" };
+    } else if (diffDays === 0) {
+        return { label: "Today", style: "text-amber-600", badgeStyle: "bg-amber-100 text-amber-600" };
+    } else if (diffDays === 1) {
+        return { label: "Tomorrow", style: "text-orange-500", badgeStyle: "bg-orange-100 text-orange-600" };
+    } else if (diffDays <= 3) {
+        return { label: "Soon", style: "text-yellow-600", badgeStyle: "bg-yellow-100 text-yellow-600" };
+    }
+    return { label: null, style: "text-gray-700 dark:text-dark-text-secondary" };
+};
+
 const TaskListTable = ({ tableData = [] }) => {
     const getStatusBadgeColor = (status) => {
         const normalized = (status ?? '').trim().replace(/_/g, ' ').replace(/\s+/g, ' ');
@@ -37,12 +62,15 @@ const TaskListTable = ({ tableData = [] }) => {
                     <th className='py-3 px-4 text-gray-800 dark:text-dark-text font-medium text-[13px]'>Name</th>
                     <th className='py-3 px-4 text-gray-800 dark:text-dark-text font-medium text-[13px]'>Status</th>
                     <th className='py-3 px-4 text-gray-800 dark:text-dark-text font-medium text-[13px]'>Priority</th>
-                    <th className='py-3 px-4 text-gray-800 dark:text-dark-text font-medium text-[13px] hidden md:table-cell'>Created On</th>
+                    <th className='py-3 px-4 text-gray-800 dark:text-dark-text font-medium text-[13px] hidden md:table-cell'>Due Date</th>
+                    <th className='py-3 px-4 text-gray-800 dark:text-dark-text font-medium text-[13px] hidden lg:table-cell'>Created On</th>
                 </tr>
             </thead>
             <tbody>
                 {tableData?.length ? (
-                    tableData.map((task) => (
+                    tableData.map((task) => {
+                        const dueDateInfo = getDueDateInfo(task?.dueDate, task?.status);
+                        return (
                         <tr key={task?._id ?? task?.id} className='border-t border-gray-200 dark:border-dark-border'>
                             <td className="py-4 px-4 text-gray-700 dark:text-dark-text-secondary text-[13px] line-clamp-1 overflow-hidden">
                                 {task?.title ?? 'Untitled'}
@@ -57,14 +85,26 @@ const TaskListTable = ({ tableData = [] }) => {
                                     {task?.priority ?? 'N/A'}
                                 </span>
                             </td>
-                            <td className="py-4 px-4 text-gray-700 dark:text-dark-text-secondary text-[13px] whitespace-nowrap hidden md:table-cell">
+                            <td className="py-4 px-4 hidden md:table-cell">
+                                <div className="flex items-center gap-2">
+                                    <span className={`text-[13px] whitespace-nowrap ${dueDateInfo.style}`}>
+                                        {task?.dueDate ? moment(task.dueDate).format('Do MMM YYYY') : 'N/A'}
+                                    </span>
+                                    {dueDateInfo.label && (
+                                        <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${dueDateInfo.badgeStyle}`}>
+                                            {dueDateInfo.label}
+                                        </span>
+                                    )}
+                                </div>
+                            </td>
+                            <td className="py-4 px-4 text-gray-700 dark:text-dark-text-secondary text-[13px] whitespace-nowrap hidden lg:table-cell">
                                 {task?.createdAt ? moment(task.createdAt).format('Do MMM YYYY') : 'N/A'}
                             </td>
                         </tr>
-                    ))
+                    )})
                 ) : (
                     <tr className='border-t border-gray-200 dark:border-dark-border'>
-                        <td colSpan={4} className='py-6 px-4 text-gray-500 dark:text-dark-text-secondary text-sm'>
+                        <td colSpan={5} className='py-6 px-4 text-gray-500 dark:text-dark-text-secondary text-sm'>
                             No tasks found.
                         </td>
                     </tr>

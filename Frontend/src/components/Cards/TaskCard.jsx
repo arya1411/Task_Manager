@@ -11,6 +11,47 @@ const formatDate = (date) => {
     });
 };
 
+// Get due date status and styling
+const getDueDateInfo = (dueDate, status) => {
+    if (!dueDate || status === "Completed") {
+        return { label: null, style: "text-gray-600 dark:text-dark-text-secondary", bgStyle: "" };
+    }
+
+    const now = new Date();
+    const due = new Date(dueDate);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const dueDay = new Date(due.getFullYear(), due.getMonth(), due.getDate());
+    const diffTime = dueDay - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+        return { 
+            label: "Overdue", 
+            style: "text-rose-600 dark:text-rose-400", 
+            bgStyle: "bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800"
+        };
+    } else if (diffDays === 0) {
+        return { 
+            label: "Due Today", 
+            style: "text-amber-600 dark:text-amber-400", 
+            bgStyle: "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800"
+        };
+    } else if (diffDays === 1) {
+        return { 
+            label: "Due Tomorrow", 
+            style: "text-orange-500 dark:text-orange-400", 
+            bgStyle: ""
+        };
+    } else if (diffDays <= 3) {
+        return { 
+            label: "Due Soon", 
+            style: "text-yellow-600 dark:text-yellow-400", 
+            bgStyle: ""
+        };
+    }
+    return { label: null, style: "text-gray-600 dark:text-dark-text-secondary", bgStyle: "" };
+};
+
 const AVATAR_COLORS = [
     'bg-blue-500',
     'bg-green-500',
@@ -88,9 +129,13 @@ const TaskCard = ({
         }
     };
 
+    const dueDateInfo = getDueDateInfo(dueDate, status);
+
     return (
         <div 
-            className="bg-white dark:bg-dark-surface rounded-xl p-5 border border-gray-100 dark:border-dark-border hover:shadow-md dark:hover:shadow-none hover:border-gray-200 dark:hover:border-dark-surface-2 transition-all duration-200 cursor-pointer group"
+            className={`bg-white dark:bg-dark-surface rounded-xl p-5 border hover:shadow-md dark:hover:shadow-none hover:border-gray-200 dark:hover:border-dark-surface-2 transition-all duration-200 cursor-pointer group ${
+                dueDateInfo.bgStyle || "border-gray-100 dark:border-dark-border"
+            }`}
             onClick={onClick}
         >
             {/* Header with status and priority */}
@@ -156,12 +201,18 @@ const TaskCard = ({
                     <LuCalendar size={12} />
                     <span>{formatDate(createdAt)}</span>
                 </div>
-                <div className={`text-xs font-medium ${
-                    dueDate && new Date(dueDate) < new Date() && status !== "Completed" 
-                        ? "text-rose-500" 
-                        : "text-gray-600 dark:text-dark-text-secondary"
-                }`}>
-                    Due: {formatDate(dueDate)}
+                <div className={`flex items-center gap-1.5 text-xs font-medium ${dueDateInfo.style}`}>
+                    {dueDateInfo.label && (
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                            dueDateInfo.label === "Overdue" ? "bg-rose-100 dark:bg-rose-900/30" :
+                            dueDateInfo.label === "Due Today" ? "bg-amber-100 dark:bg-amber-900/30" :
+                            dueDateInfo.label === "Due Tomorrow" ? "bg-orange-100 dark:bg-orange-900/30" :
+                            "bg-yellow-100 dark:bg-yellow-900/30"
+                        }`}>
+                            {dueDateInfo.label}
+                        </span>
+                    )}
+                    <span>Due: {formatDate(dueDate)}</span>
                 </div>
             </div>
 

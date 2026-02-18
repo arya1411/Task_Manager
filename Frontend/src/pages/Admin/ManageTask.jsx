@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosInstance';
@@ -6,6 +6,20 @@ import { API_PATH } from '../../utils/apiPath';
 import { LuFile, LuFileSpreadsheet } from 'react-icons/lu';
 import TaskStatusTabs from '../../components/layout/TaskStatusTabs';
 import TaskCard from '../../components/Cards/TaskCard';
+import SortDropdown from '../../components/Inputs/SortDropdown';
+
+const SORT_OPTIONS = [
+  { value: 'dueDate-asc', label: 'Due Date (Earliest)' },
+  { value: 'dueDate-desc', label: 'Due Date (Latest)' },
+  { value: 'priority-desc', label: 'Priority (High to Low)' },
+  { value: 'priority-asc', label: 'Priority (Low to High)' },
+  { value: 'createdAt-desc', label: 'Newest First' },
+  { value: 'createdAt-asc', label: 'Oldest First' },
+  { value: 'status-asc', label: 'Status (Pending → Completed)' },
+];
+
+const PRIORITY_ORDER = { High: 3, Medium: 2, Low: 1 };
+const STATUS_ORDER = { Pending: 1, 'In Progress': 2, Completed: 3 };
 const ManageTask = () => {
 
   const [allTask , setAllTask]  = useState([]);
@@ -13,6 +27,40 @@ const ManageTask = () => {
   const [tabs , setTabs] = useState([]);
 
   const [filterStatus , setFilterStatus] = useState("All");
+  const [sortBy, setSortBy] = useState('dueDate-asc');
+
+  // Sort tasks based on selected option
+  const sortedTasks = useMemo(() => {
+    if (!allTask.length) return [];
+    
+    const [field, order] = sortBy.split('-');
+    const sorted = [...allTask].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (field) {
+        case 'dueDate':
+          const dateA = a.dueDate ? new Date(a.dueDate) : new Date('9999-12-31');
+          const dateB = b.dueDate ? new Date(b.dueDate) : new Date('9999-12-31');
+          comparison = dateA - dateB;
+          break;
+        case 'priority':
+          comparison = (PRIORITY_ORDER[a.priority] || 0) - (PRIORITY_ORDER[b.priority] || 0);
+          break;
+        case 'createdAt':
+          comparison = new Date(a.createdAt) - new Date(b.createdAt);
+          break;
+        case 'status':
+          comparison = (STATUS_ORDER[a.status] || 0) - (STATUS_ORDER[b.status] || 0);
+          break;
+        default:
+          comparison = 0;
+      }
+      
+      return order === 'desc' ? -comparison : comparison;
+    });
+    
+    return sorted;
+  }, [allTask, sortBy]);
 
   const navigate  = useNavigate();
 
@@ -93,6 +141,12 @@ const ManageTask = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Sort Dropdown */}
+            <SortDropdown
+              value={sortBy}
+              onChange={setSortBy}
+              options={SORT_OPTIONS}
+            />
             <button 
               className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border text-gray-700 dark:text-dark-text rounded-lg hover:bg-gray-50 dark:hover:bg-dark-surface-2 transition text-sm font-medium"
               onClick={handleDownloadReport}
@@ -115,8 +169,8 @@ const ManageTask = () => {
 
       {/* Task Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {allTask?.length > 0 ? (
-          allTask.map((item) => (
+        {sortedTasks?.length > 0 ? (
+          sortedTasks.map((item) => (
             <TaskCard
               key={item._id}
               title={item.title}
