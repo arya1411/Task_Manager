@@ -279,6 +279,24 @@ Exports use `exceljs` and return downloadable Excel files:
 
 ---
 
-## Author
+## IMAGE OR DEMO
 
+----- HOME PAGE ----
+<img width="1902" height="858" alt="Screenshot 2026-02-20 191316" src="https://github.com/user-attachments/assets/aaac74a8-4e73-472d-a10b-e1b1789b3758" />
+<img width="1899" height="865" alt="image" src="https://github.com/user-attachments/assets/66eceaf9-3a8f-4ecc-85e0-858093deaa73" />
+
+-----LOGIN PAGE ----
+<img width="1919" height="872" alt="Screenshot 2026-02-20 191413" src="https://github.com/user-attachments/assets/6e8d3b7c-4ef4-498e-8608-111fbdc34ceb" />
+
+----- ADMIN DASHBOARD ----
+<img width="1905" height="856" alt="Screenshot 2026-02-20 191439" src="https://github.com/user-attachments/assets/837a5e39-53b0-47b9-90cf-a5ec6bea2881" />
+<img width="1919" height="870" alt="Screenshot 2026-02-20 191510" src="https://github.com/user-attachments/assets/0b9166d3-f12c-488e-bb22-335e10e25de5" />
+<img width="1573" height="869" alt="Screenshot 2026-02-20 191600" src="https://github.com/user-attachments/assets/57450e48-400f-4607-8559-5382d9da0050" />
+
+---- USER DASHBOARD ----
+<img width="1635" height="689" alt="Screenshot 2026-02-20 191652" src="https://github.com/user-attachments/assets/b6246745-cf00-4098-8839-4a55eabd9026" />
+<img width="1642" height="791" alt="Screenshot 2026-02-20 191707" src="https://github.com/user-attachments/assets/c5e92f66-b113-4f3d-b4b9-57a720f245fd" />
+<img width="1666" height="794" alt="Screenshot 2026-02-20 191724" src="https://github.com/user-attachments/assets/bd90e258-37b2-4c5c-9b33-fe45e333c366" />
+
+## Author
 Made by Arya.
