@@ -226,7 +226,7 @@ Token is generated on login/register and expires in 7 days.
 Supported canonical statuses in backend:
 
 - `Pending`
-- `In_Progress`
+- `In Progress`
 - `Completed`
 
 Backend also normalizes variants like `in progress`, `in-progress`, `In Progress`.
