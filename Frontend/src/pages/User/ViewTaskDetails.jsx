@@ -1,16 +1,22 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import axiosInstance from '../../utils/axiosInstance';
 import { API_PATH } from '../../utils/apiPath';
-import { LuArrowLeft, LuCalendar, LuClock, LuUsers, LuPaperclip, LuCheck } from 'react-icons/lu';
+import { LuArrowLeft, LuCalendar, LuClock, LuUsers, LuPaperclip, LuCheck, LuMessageSquare, LuSend } from 'react-icons/lu';
 import moment from 'moment';
+import { showSuccessToast, showErrorToast } from '../../utils/toast';
+import { UserContext } from '../../context/userContenxt';
 
 const ViewTaskDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useContext(UserContext);
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [commentLoading, setCommentLoading] = useState(false);
 
   const getStatusTagColor = (status) => {
     switch (status) {
@@ -40,11 +46,33 @@ const ViewTaskDetails = () => {
       const response = await axiosInstance.get(API_PATH.TASKS.GET_TASK_BY_ID(id));
       if (response.data) {
         setTask(response.data);
+        setComments(response.data.comments || []);
       }
     } catch (error) {
       console.error("Error fetching task details:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+
+    setCommentLoading(true);
+    try {
+      const response = await axiosInstance.post(API_PATH.TASKS.ADD_COMMENT(id), {
+        text: newComment.trim(),
+      });
+      if (response.data?.comment) {
+        setComments(prev => [...prev, response.data.comment]);
+        setNewComment("");
+        showSuccessToast("Comment added successfully!");
+      }
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      showErrorToast(error.response?.data?.message || "Failed to add comment");
+    } finally {
+      setCommentLoading(false);
     }
   };
 
@@ -212,6 +240,92 @@ const ViewTaskDetails = () => {
             ) : (
               <div className="text-center py-8">
                 <p className="text-gray-400 dark:text-dark-text-secondary">No checklist items</p>
+              </div>
+            )}
+          </div>
+
+          {/* Comments Section */}
+          <div className="bg-white dark:bg-dark-surface rounded-xl p-6 border border-gray-100 dark:border-dark-border">
+            <div className="flex items-center gap-2 mb-5">
+              <LuMessageSquare className="text-lg text-gray-500" />
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-dark-text">
+                Comments ({comments.length})
+              </h2>
+            </div>
+
+            {/* Add Comment */}
+            <div className="flex gap-3 mb-6">
+              {user?.profileImageUrl ? (
+                <img
+                  src={user.profileImageUrl}
+                  alt={user.name}
+                  className="w-9 h-9 rounded-full object-cover shrink-0"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center shrink-0">
+                  <span className="text-sm font-medium text-purple-600">
+                    {user?.name?.charAt(0)?.toUpperCase() || "?"}
+                  </span>
+                </div>
+              )}
+              <div className="flex-1 flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Add a comment..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
+                  className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-surface-2 text-gray-900 dark:text-dark-text text-sm placeholder:text-gray-400 dark:placeholder:text-dark-text-secondary focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-50 dark:focus:ring-purple-900/30 transition"
+                />
+                <button
+                  onClick={handleAddComment}
+                  disabled={commentLoading || !newComment.trim()}
+                  className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white rounded-lg transition disabled:cursor-not-allowed"
+                >
+                  <LuSend className="text-lg" />
+                </button>
+              </div>
+            </div>
+
+            {/* Comments List */}
+            {comments.length > 0 ? (
+              <div className="space-y-4">
+                {comments.map((comment, index) => (
+                  <div key={comment._id || index} className="flex gap-3">
+                    {comment.user?.profileImageUrl ? (
+                      <img
+                        src={comment.user.profileImageUrl}
+                        alt={comment.user.name}
+                        className="w-9 h-9 rounded-full object-cover shrink-0"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-dark-surface-2 flex items-center justify-center shrink-0">
+                        <span className="text-sm font-medium text-gray-600 dark:text-dark-text-secondary">
+                          {comment.user?.name?.charAt(0)?.toUpperCase() || "?"}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-medium text-gray-900 dark:text-dark-text">
+                          {comment.user?.name || "Unknown User"}
+                        </span>
+                        <span className="text-xs text-gray-400 dark:text-dark-text-secondary">
+                          {moment(comment.createdAt).fromNow()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-dark-text-secondary">
+                        {comment.text}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <LuMessageSquare className="w-10 h-10 text-gray-300 dark:text-dark-text-secondary mx-auto mb-2" />
+                <p className="text-gray-400 dark:text-dark-text-secondary text-sm">No comments yet</p>
+                <p className="text-gray-400 dark:text-dark-text-secondary text-xs mt-1">Be the first to comment!</p>
               </div>
             )}
           </div>

@@ -92,34 +92,35 @@ const getUserProfile = async(req ,res )=> {
     }
 };
 
-const updateUserProfile = async (req ,res)=> {
-    try{
-        const user = await User.findOne(req.user.id);
+const updateUserProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
 
-        if(!user){
-            return res.status(400).json({message : "User not found"});
-
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
         }
 
         user.name = req.body.name || user.name;
-        user.email  = req.body.email  || user.email;
+        user.email = req.body.email || user.email;
+        user.profileImageUrl = req.body.profileImageUrl || user.profileImageUrl;
 
-        if(req.body.password){
+        if (req.body.password) {
             const salt = await bcrypt.genSalt(10);
-            user.password = await bcrypt.hash(req.body.password , salt);
+            user.password = await bcrypt.hash(req.body.password, salt);
         }
 
-        const updateUser = await user.save();
+        const updatedUser = await user.save();
 
         res.json({
-            _id : updateUser._id,
-            name : updatedUser.name,
-            email : updatedUser.email,
-            role : updatedUser.role,
-            token : generateToken(updateUser._id),
+            _id: updatedUser._id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            role: updatedUser.role,
+            profileImageUrl: updatedUser.profileImageUrl,
+            token: generateToken(updatedUser._id),
         });
-    } catch(error){
-        res.status(500).json({message : "Server Error" , error: error.message});
+    } catch (error) {
+        res.status(500).json({ message: "Server Error", error: error.message });
     }
 };
 

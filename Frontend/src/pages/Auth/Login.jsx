@@ -4,6 +4,7 @@ import { validateEmail } from '../../utils/helper';
 import axiosInstance from '../../utils/axiosInstance';
 import { API_PATH } from '../../utils/apiPath';
 import { UserContext } from '../../context/userContenxt';
+import { showSuccessToast, showErrorToast } from '../../utils/toast';
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -35,10 +36,13 @@ const Login = () => {
       if (token) {
         localStorage.setItem("token", token);
         updateUser(response.data);
+        showSuccessToast("Login successful! Welcome back.");
         navigate(role === 'admin' ? '/admin/dashboard' : '/user/dashboard');
       }
     } catch (error) {
-      setError(error.response?.data?.message || "Something went wrong, please try again");
+      const errorMsg = error.response?.data?.message || "Something went wrong, please try again";
+      setError(errorMsg);
+      showErrorToast(errorMsg);
     } finally {
       setLoading(false);
     }

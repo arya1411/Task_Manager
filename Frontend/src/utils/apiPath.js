@@ -5,6 +5,7 @@ export const API_PATH =  {
         REGISTER : '/api/auth/register',
         LOGIN : '/api/auth/login',
         GET_PROFILE : '/api/auth/profile',
+        UPDATE_PROFILE : '/api/auth/profile',
     } ,
     USERS : {
         GET_ALL_USERS : "/api/users",
@@ -25,11 +26,16 @@ export const API_PATH =  {
 
         UPDATE_TASK_STATUS : (taskId) => `/api/tasks/${taskId}/status`,
         UPDATE_TODO_CHEKCLIST : (taskId) => `/api/tasks/${taskId}/todo`,
+
+        GET_COMMENTS: (taskId) => `/api/tasks/${taskId}/comments`,
+        ADD_COMMENT: (taskId) => `/api/tasks/${taskId}/comments`,
     },
 
     REPORTS : {
-        EXPORT_TASKS : '/api/reports/export/tasks',
-        EXPORT_USERS : '/api/reports/export/users',
+        EXPORT_TASKS : '/api/reports/exports/tasks',
+        EXPORT_USERS : '/api/reports/exports/users',
+        EXPORT_TASKS_PDF : '/api/reports/exports/tasks/pdf',
+        EXPORT_USERS_PDF : '/api/reports/exports/users/pdf',
     } ,
 
     IMAGE :{

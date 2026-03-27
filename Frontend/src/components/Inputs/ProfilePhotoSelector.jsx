@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { LuUser, LuUpload, LuTrash } from "react-icons/lu";
 
-const ProfilePhotoSelector = ({ image, setImage }) => {
+const ProfilePhotoSelector = ({ image, setImage, currentImage }) => {
   const inputRef = useRef(null);
   const [previewUrl, setPreviewUrl] = useState(null);
 
@@ -23,6 +23,10 @@ const ProfilePhotoSelector = ({ image, setImage }) => {
     inputRef.current.click();
   };
 
+  // Determine which image to show: new preview, current image, or placeholder
+  const displayImage = previewUrl || (image ? URL.createObjectURL(image) : null);
+  const hasImage = displayImage || currentImage;
+
   return (
     <div className="flex justify-center mb-6">
       <input
@@ -33,7 +37,7 @@ const ProfilePhotoSelector = ({ image, setImage }) => {
         className="hidden"
       />
 
-      {!image ? (
+      {!hasImage ? (
         <div className="w-20 h-20 flex items-center justify-center bg-blue-100/50 rounded-full relative cursor-pointer">
           <LuUser className="text-4xl text-primary" />
 
@@ -48,17 +52,27 @@ const ProfilePhotoSelector = ({ image, setImage }) => {
       ) : (
         <div className="relative">
           <img
-            src={previewUrl}
+            src={displayImage || currentImage}
             alt="Profile"
-            className="w-20 h-20 rounded-full object-cover"
+            className="w-20 h-20 rounded-full object-cover border-2 border-gray-200 dark:border-dark-border"
           />
-          <button
-            type="button"
-            className="w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-full absolute -bottom-1 -right-1"
-            onClick={handleRemoveImage}
-          >
-            <LuTrash />
-          </button>
+          {image ? (
+            <button
+              type="button"
+              className="w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-full absolute -bottom-1 -right-1"
+              onClick={handleRemoveImage}
+            >
+              <LuTrash />
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="w-8 h-8 flex items-center justify-center bg-primary text-white rounded-full absolute -bottom-1 -right-1 cursor-pointer"
+              onClick={onChooseFile}
+            >
+              <LuUpload />
+            </button>
+          )}
         </div>
       )}
     </div>

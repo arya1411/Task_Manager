@@ -20,6 +20,7 @@ It supports authentication, role-aware task operations, dashboards, checklist pr
 - [Task Status Rules](#task-status-rules)
 - [File Uploads](#file-uploads)
 - [Reports](#reports)
+- [Recent Updates](#recent-updates)
 - [Known Notes](#known-notes)
 - [Roadmap Ideas](#roadmap-ideas)
 - [Author](#author)
@@ -37,6 +38,7 @@ This project is organized into two top-level apps:
 
 ## Features
 
+### Core Features
 - JWT-based user authentication (`register`, `login`, `profile`)
 - Role model in backend (`admin`, `member`)
 - Admin-focused task creation/management
@@ -46,6 +48,14 @@ This project is organized into two top-level apps:
 - Image upload API with multer (JPEG/PNG, max 5MB)
 - Excel report export for tasks and users
 - Responsive frontend with charts and cards
+- Dark/Light mode toggle
+
+### New Features (Latest Update)
+- **Toast Notifications**: Real-time user feedback with success, error, info, and warning notifications across the application
+- **Task Comments**: Team collaboration feature - users can add, view, and manage comments on tasks they're assigned to
+- **Edit Profile**: Both users and admins can update their profile (name, email, password, profile photo)
+- **Admin User Enrollment**: Admins can create new users directly from the dashboard with optional admin role assignment via invite token
+- **Sidebar Integration**: New "Edit Profile" and "Add User" menu items in admin and user sidebars
 
 ---
 
@@ -188,6 +198,7 @@ Base URL: `http://localhost:8000`
 
 - `GET /` - Get users (admin only)
 - `GET /:id` - Get single user
+- `POST /` - Create user (admin only) - NEW
 - `DELETE /:id` - Delete user (admin only)
 
 ### Task Routes (`/api/tasks`)
@@ -201,6 +212,8 @@ Base URL: `http://localhost:8000`
 - `DELETE /:id` - Delete task (admin only)
 - `PUT /:id/status` - Update task status
 - `PUT /:id/todo` - Update checklist + auto progress/status
+- `GET /:id/comments` - Get all comments on a task (protected) - NEW
+- `POST /:id/comments` - Add comment to task (protected) - NEW
 
 ### Report Routes (`/api/reports`)
 
@@ -258,6 +271,60 @@ Exports use `exceljs` and return downloadable Excel files:
 
 - `task_report.xlsx`
 - `user_report.xlsx`
+
+---
+
+## Recent Updates
+
+### Version 2.0 - New Features Released
+
+#### 1. Toast Notifications System ✅
+- Integrated `react-toastify` for real-time user feedback
+- Implemented 4 notification types: `success`, `error`, `info`, `warning`
+- Applied across: Login, User Creation, Profile Updates, Comment Operations
+- **Files Modified**:
+  - `Frontend/src/utils/toast.js` (NEW)
+  - `Frontend/src/main.jsx`
+  - `Frontend/src/pages/Auth/Login.jsx`
+  - `Frontend/src/pages/Admin/CreateUser.jsx`
+  - `Frontend/src/pages/EditProfile.jsx`
+
+#### 2. Task Comments System ✅
+- Team members can add and view comments on tasks
+- Only task collaborators and admins can comment
+- Real-time comment updates with timestamps
+- User avatars and names shown with each comment
+- **Backend**:
+  - `Backend/models/Task.js` - Added `comments` schema field
+  - `Backend/controllers/taskController.js` - Added `addComment()` and `getComments()`
+  - `Backend/routes/taskRoute.js` - Added comment endpoints
+- **Frontend**:
+  - `Frontend/src/pages/User/ViewTaskDetails.jsx` - Full comment UI
+
+#### 3. User Profile Management ✅
+- Edit profile page for both users and admins
+- Update: name, email, password, profile photo
+- **New Routes**:
+  - `/admin/edit-profile` (Admin)
+  - `/user/edit-profile` (User)
+- **Files Modified**:
+  - `Frontend/src/pages/EditProfile.jsx` (NEW)
+  - `Frontend/src/components/Inputs/ProfilePhotoSelector.jsx` - Enhanced
+
+#### 4. Admin User Enrollment ✅
+- Admins can create new users from dashboard
+- Optional role assignment via `ADMIN_INVITE_TOKEN`
+- Direct user management without signup page
+- **New Route**: `/admin/create-user`
+- **Files Modified**:
+  - `Frontend/src/pages/Admin/CreateUser.jsx` (NEW)
+  - `Backend/controllers/userController.js` - Added `createUser()`
+
+#### 5. Navigation & UI Improvements ✅
+- Added "Add User" menu item in admin sidebar
+- Added "Edit Profile" menu item in both sidebars
+- Improved sidebar organization
+- **Files Modified**: `Frontend/src/utils/data.js`
 
 ---
 

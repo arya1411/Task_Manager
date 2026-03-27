@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import axiosInstance from '../../utils/axiosInstance';
 import { API_PATH } from '../../utils/apiPath';
-import { LuFileSpreadsheet, LuUsers } from 'react-icons/lu';
+import { LuFileSpreadsheet, LuPlus, LuUsers } from 'react-icons/lu';
 import UserCard from '../../components/Cards/UserCard';
+import { useNavigate } from 'react-router-dom';
 
 const ManageUser = () => {
   const [allUser, setAllUsers] = useState([]);
+  const navigate = useNavigate();
 
   const getAllUser = async () => {
     try {
@@ -53,13 +55,23 @@ const ManageUser = () => {
             <p className="text-sm text-gray-500 dark:text-dark-text-secondary mt-1">Manage your team members</p>
           </div>
 
-          <button
-            className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border text-gray-700 dark:text-dark-text rounded-lg hover:bg-gray-50 dark:hover:bg-dark-surface-2 transition text-sm font-medium"
-            onClick={handleDownloadReport}
-          >
-            <LuFileSpreadsheet className="text-lg" />
-            <span>Download Report</span>
-          </button>
+          <div className="flex gap-3">
+            <button
+              className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition text-sm font-medium"
+              onClick={() => navigate('/admin/create-user')}
+            >
+              <LuPlus className="text-lg" />
+              <span>Add User</span>
+            </button>
+
+            <button
+              className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border text-gray-700 dark:text-dark-text rounded-lg hover:bg-gray-50 dark:hover:bg-dark-surface-2 transition text-sm font-medium"
+              onClick={handleDownloadReport}
+            >
+              <LuFileSpreadsheet className="text-lg" />
+              <span>Download Report</span>
+            </button>
+          </div>
         </div>
       </div>
 

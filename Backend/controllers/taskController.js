@@ -272,10 +272,9 @@ const getUserDashboardData = async(req , res) => {
 const getTaskbyId = async(req , res) => {
 
     try {
-        const task = await Task.findById(req.params.id).populate(
-            "assignedTo",
-            "name email profileImageUrl"
-        );
+        const task = await Task.findById(req.params.id)
+            .populate("assignedTo", "name email profileImageUrl")
+            .populate("comments.user", "name email profileImageUrl");
 
         if (!task) return res.status(404).json({ message: "Task not Found" });
 
@@ -492,6 +491,73 @@ const updateTaskChecklist = async(req , res) => {
     }
 }
 
+const addComment = async (req, res) => {
+    try {
+        const { text } = req.body;
+        const taskId = req.params.id;
+
+        if (!text || !text.trim()) {
+            return res.status(400).json({ message: "Comment text is required" });
+        }
+
+        const task = await Task.findById(taskId);
+        if (!task) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
+        // Check if user is assigned to this task or is admin
+        const assignedToList = Array.isArray(task.assignedTo) ? task.assignedTo : [];
+        const isAssigned = assignedToList.some(
+            (userId) => userId.toString() === req.user._id.toString()
+        );
+
+        if (!isAssigned && req.user.role !== "admin") {
+            return res.status(403).json({ message: "Not authorized to comment on this task" });
+        }
+
+        const newComment = {
+            user: req.user._id,
+            text: text.trim(),
+            createdAt: new Date(),
+        };
+
+        task.comments.push(newComment);
+        await task.save();
+
+        // Populate the user info for the new comment
+        const updatedTask = await Task.findById(taskId)
+            .populate("comments.user", "name email profileImageUrl");
+
+        const addedComment = updatedTask.comments[updatedTask.comments.length - 1];
+
+        res.status(201).json({
+            message: "Comment added successfully",
+            comment: addedComment,
+        });
+    } catch (error) {
+        return res.status(500).json({ message: "Server Error", error: error.message });
+    }
+};
+
+const getComments = async (req, res) => {
+    try {
+        const taskId = req.params.id;
+
+        const task = await Task.findById(taskId)
+            .populate("comments.user", "name email profileImageUrl");
+
+        if (!task) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
+        res.status(200).json({
+            comments: task.comments || [],
+        });
+    } catch (error) {
+        return res.status(500).json({ message: "Server Error", error: error.message });
+    }
+};
+
 
 module.exports = {
     updateTaskChecklist,
@@ -503,5 +569,7 @@ module.exports = {
     getUserDashboardData,
     getDashboardData,
     getTasks,
+    addComment,
+    getComments,
 }
 
